@@ -2,7 +2,7 @@
     "id": "extract_info_from_web_page",
     "uuid": "2bdd1547-ab4a-42f6-9ded-b59de84ec044",
     "emoji": "📖",
-    "title": "Extract Web Page (Firecrawl)",
+    "title": "Extract Web Page",
     "mcpDetails": null,
     "openaiSpec": {
         "name": "extract_info_from_web_page",
