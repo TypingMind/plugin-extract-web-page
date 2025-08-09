@@ -8,4 +8,4 @@ This plugin returns much more concise results compared to reading the whole web 
 
 **Example usage**:
 
-> Tist today's news about AI from https://news.ycombinator.com/
+> List today's news about AI from https://news.ycombinator.com/
