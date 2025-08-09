@@ -32,7 +32,8 @@
             "name": "firecrawlAPIKey",
             "label": "Firecrawl API Key",
             "required": true,
-            "description": "..."
+            "type": "password",
+            "description": "Enter your Firecrawl API key. You can create one at https://www.firecrawl.dev/app/api-keys"
         }
     ],
     "authenticationType": "AUTH_TYPE_NONE",
