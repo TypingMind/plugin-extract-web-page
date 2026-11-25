@@ -11,95 +11,38 @@ async function extract_info_from_web_page(params, userSettings) {
     }
 
     try {
-        // Step 1: Send extract request to Firecrawl
-        const extractResponse = await fetch('https://api.firecrawl.dev/v1/extract', {
+        const extractResponse = await fetch('https://api.firecrawl.dev/v2/scrape', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${firecrawlAPIKey}`
             },
             body: JSON.stringify({
-                urls: [url],
-                prompt: question
+                url,
+                formats: [{ type: 'json', prompt: question }],
+                onlyMainContent: false,
+                maxAge: 0,
+                timeout: 300000
             })
         });
 
         if (!extractResponse.ok) {
             const errorData = await extractResponse.json().catch(() => ({}));
-            throw new Error(`Failed to start extraction: ${extractResponse.status} - ${errorData.error || extractResponse.statusText}`);
+            throw new Error(`Extraction failed: ${extractResponse.status} - ${errorData.error || extractResponse.statusText}`);
         }
 
         const extractData = await extractResponse.json();
         
-        // If the extraction completed immediately (synchronous response)
-        if (extractData.success && extractData.data && !extractData.id) {
+        if (extractData.success && extractData.data?.json != null) {
             return {
                 success: true,
-                data: extractData.data,
+                data: extractData.data.json,
+                warning: extractData.data.warning,
                 message: "Information extracted successfully from the web page."
             };
         }
         
-        // Step 2: Get the extract job ID for polling
-        const jobId = extractData.id;
-        if (!jobId) {
-            throw new Error("No job ID received from Firecrawl extract API");
-        }
-
-        // Step 3: Poll for results every 1 second
-        let attempts = 0;
-        const maxAttempts = 300; // 5 minutes maximum wait time
-        const pollInterval = 1000; // 1 second
-
-        while (attempts < maxAttempts) {
-            // Wait 1 second before polling
-            await new Promise(resolve => setTimeout(resolve, pollInterval));
-            attempts++;
-
-            // Check extraction status
-            const statusResponse = await fetch(`https://api.firecrawl.dev/v1/extract/${jobId}`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${firecrawlAPIKey}`
-                }
-            });
-
-            if (!statusResponse.ok) {
-                const errorData = await statusResponse.json().catch(() => ({}));
-                throw new Error(`Failed to check extraction status: ${statusResponse.status} - ${errorData.error || statusResponse.statusText}`);
-            }
-
-            const statusData = await statusResponse.json();
-
-            // Check if extraction is completed
-            if (statusData.status === 'completed' && statusData.success) {
-                return {
-                    success: true,
-                    data: statusData.data,
-                    message: `Information extracted successfully from the web page after ${attempts} seconds.`,
-                    extractionTime: attempts
-                };
-            }
-
-            // Check if extraction failed
-            if (statusData.status === 'failed' || (statusData.status === 'completed' && !statusData.success)) {
-                throw new Error(`Extraction failed: ${statusData.error || 'Unknown error occurred during extraction'}`);
-            }
-
-            // Check if extraction was cancelled
-            if (statusData.status === 'cancelled') {
-                throw new Error('Extraction was cancelled');
-            }
-
-            // Continue polling if status is 'processing' or 'pending'
-            if (statusData.status === 'processing' || statusData.status === 'pending') {
-                // Continue polling
-                continue;
-            }
-        }
-
-        // If we've reached max attempts without completion
-        throw new Error(`Extraction timed out after ${maxAttempts} seconds. The job may still be processing - please try again later.`);
+        throw new Error(`Extraction failed: ${extractData.data?.warning || 'No information was extracted from the web page.'}`);
 
     } catch (error) {
         // Handle network errors and other exceptions
