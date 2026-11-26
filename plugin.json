@@ -24,7 +24,7 @@
                 }
             }
         },
-        "description": "Collect a piece of data from a web URL. Use this plugin when you need to get specific information from long web pages. The extract process is done in the background and can handle web pages with large content. Use this plugin when you need to find specific information from a website URL."
+        "description": "Collect a piece of data from a web URL. Use this plugin when you need to get specific information from long web pages. Use this plugin when you need to find specific information from a website URL."
     },
     "outputType": "respond_to_ai",
     "oauthConfig": null,
